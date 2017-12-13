@@ -1,6 +1,7 @@
 package enums
 
-//go:generate make-null-type -type=TypeMemberStatus
+//go:generate go-null -package=github.com/rimpo/go-null -output=..
+
 type TypeMemberStatus string
 
 const (
@@ -47,40 +48,6 @@ const (
 	PhotoRequestDelete
 )
 
-//go:generate make-null-type -type=TypeSample1
-type TypeSample1 int
-
-const (
-	Sample1_1 TypeSample1 = iota
-)
-
-//go:generate make-null-type -type=TypeSample2
-type TypeSample2 int
-
-const (
-	Sample2_1 TypeSample2 = iota
-	Sample2_2
-	Sample2_3
-	Sample2_4
-	Sample2_5
-	Sample2_6
-	Sample2_7
-	Sample2_8
-	Sample2_9
-	Sample2_10
-	Sample2_11
-)
-
-//go:generate make-null-type -type=TypeSample3
-type TypeSample3 int
-
-const (
-	Sample3_1 TypeSample3 = -1
-	Sample3_2             = -2
-	Sample3_3             = -3
-)
-
-//go:generate make-null-type -type=TypePhotoPasswordRequest
 type TypePhotoPasswordRequest int
 
 const (
