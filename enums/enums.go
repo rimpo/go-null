@@ -19,9 +19,9 @@ const (
 type TypePhotoStatus int
 
 const (
-	PhotoNotAvailable TypePhotoStatus = iota
-	PhotoComingSoon
-	PhotoAvailable
+	PhotoNotAvailable TypePhotoStatus = iota //not available
+	PhotoComingSoon                          //coming soon
+	PhotoAvailable                           //available
 )
 
 type TypeShowPhoto string
@@ -41,21 +41,11 @@ const (
 type TypePhotoRequest int
 
 const (
-	PhotoRequestNotAvailable TypePhotoRequest = iota
-	PhotoRequestSent
-	PhotoRequestAccepted
-	PhotoRequestRejected
-	PhotoRequestDelete
-)
-
-type TypePhotoPasswordRequest int
-
-const (
-	PhotoPasswordRequestNotAvailable TypePhotoPasswordRequest = iota
-	PhotoPasswordRequestSent
-	PhotoPasswordRequestAccepted
-	PhotoPasswordRequestRejected
-	PhotoPasswordRequestDelete
+	PhotoRequestNotAvailable TypePhotoRequest = 10 //photo request not available
+	PhotoRequestSent                          = 11 //photo request sent
+	PhotoRequestAccepted                      = 12 //photo request rejected
+	PhotoRequestRejected                      = 13 //photo rejected
+	PhotoRequestDelete                        = 14 //deleted
 )
 
 type TypeNamePrivacy string
