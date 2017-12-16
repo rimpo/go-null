@@ -29,7 +29,7 @@ var (
 func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "For more information, see:\n")
-	fmt.Fprintf(os.Stderr, "\thttp://godoc.org/golang.org/x/tools/cmd/make-null-type\n")
+	fmt.Fprintf(os.Stderr, "\thttp://github.com/rimpo/go-null\n")
 	fmt.Fprintf(os.Stderr, "Flags:\n")
 	flag.PrintDefaults()
 }
@@ -43,7 +43,7 @@ func mkDir(dir string) {
 
 func main() {
 	log.SetFlags(0)
-	log.SetPrefix("make-null-type: ")
+	log.SetPrefix("go-null: ")
 	flag.Usage = Usage
 	flag.Parse()
 
@@ -352,7 +352,7 @@ func (f *File) genDecl(node ast.Node) bool {
 	if ok {
 		if decl.Tok == token.TYPE {
 			for _, spec := range decl.Specs {
-				tspec, ok := spec.(*ast.TypeSpec) // Guaranteed to succeed as this is CONST.
+				tspec, ok := spec.(*ast.TypeSpec)
 				if ok {
 					tbase, ok := tspec.Type.(*ast.Ident)
 					if ok {
