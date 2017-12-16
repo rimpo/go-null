@@ -1,4 +1,6 @@
-package enums
+package enum
+
+//Note: Int comment is the text which is getting mapped to id
 
 type TypeSample1 int
 

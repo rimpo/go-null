@@ -1,5 +1,9 @@
 package main
 
+import (
+	"text/template"
+)
+
 const basicHeaderCode = `
 package null
 
@@ -7,11 +11,11 @@ import (
 	"log"
     "runtime/debug"
 	"encoding/json"
-	"%s"
+
+	{{.ImportLib}}
 )
 
 //Auto-generated code; DONT EDIT THIS CODE
-
 
 `
 
@@ -30,6 +34,7 @@ import (
 `
 
 const allTypesHeaderCode = `
+
 package null
 
 //Auto-generated code; DONT EDIT THIS CODE
@@ -42,6 +47,7 @@ var (
 `
 
 const basicBodyCode = `
+
 type {{.TypeName}} struct {
 	val {{.BuiltInTypeName}}
 	valid bool
@@ -77,6 +83,7 @@ func (t *{{.TypeName}}) IsNull() bool {
 `
 
 const basicSetSafeCode = `
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *{{.TypeName}}) SetSafe(val {{.BuiltInTypeName}}) {
 	if !IsValue{{.TypeName}}(val) {
@@ -86,6 +93,37 @@ func (t *{{.TypeName}}) SetSafe(val {{.BuiltInTypeName}}) {
 	t.val = val
 	t.valid = true
 }
+
+`
+
+const isValueSwitchCode = `
+
+func IsValue{{.TypeName}}(val {{.BuiltInTypeName}}) bool {
+	switch val {
+	{{.SwitchCode}}
+	default:
+			return false
+
+	}
+}
+
+`
+const isValueMapCode = `
+
+var (
+	map{{.TypeName}} = map[{{.BuiltInTypeName}}]bool {
+	{{.MapValues}}
+	}
+)
+
+func IsValue{{.TypeName}}(val {{.BuiltInTypeName}}) bool {
+	_, ok := map{{.TypeName}}[val]
+	if !ok {
+		return false
+	}
+	return true
+}
+
 `
 
 const basicMarshalCode = `
@@ -95,6 +133,32 @@ func (t *{{.TypeName}}) MarshalJSON() ([]byte, error) {
 }
 
 `
+
+const numericalMapMarshalCode = `
+
+var (
+	map{{.TypeName}}NumToText = map[{{.BuiltInTypeName}}] string {
+	{{.MapValues}}
+	}
+)
+
+func (t *{{.TypeName}}) MarshalJSON() ([]byte, error) {
+	v, ok := map{{.TypeName}}NumToText[t.val]
+	if ok {
+		return json.Marshal(v)
+	}
+	return json.Marshal(t.val)
+}
+
+`
+
+var templateBasicHeaderCode = template.Must(template.New("tempalteBasicHeaderCode").Parse(basicHeaderCode))
+var templateBasicBodyCode = template.Must(template.New("templateBasicBodyCode").Parse(basicBodyCode))
+var templateBasicSetSafeCode = template.Must(template.New("templateBasicSetSafeCode").Parse(basicSetSafeCode))
+var templateIsValueSwitchCode = template.Must(template.New("templateIsValueSwitchCode").Parse(isValueSwitchCode))
+var templateIsValueMapCode = template.Must(template.New("templateIsValueMapCode").Parse(isValueMapCode))
+var templateBasicMarshalCode = template.Must(template.New("templateBasicMarshalCode").Parse(basicMarshalCode))
+var templateNumericalMapMarshalCode = template.Must(template.New("templateBasicIsSafeCode").Parse(numericalMapMarshalCode))
 
 func generateStringEnumSwitch_IsValue(typ *Type) string {
 	result := basicSetSafeCode + `

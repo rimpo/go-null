@@ -1,6 +1,6 @@
-package enums
+package enum
 
-//go:generate go-null -package=github.com/rimpo/go-null -output=..
+//go:generate go-null -package=github.com/rimpo/go-null/examples/example1 -output=..
 
 type TypeMemberStatus string
 

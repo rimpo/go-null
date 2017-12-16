@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
-	exact "go/constant"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -16,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 )
 
 var (
@@ -38,7 +36,6 @@ func mkDir(dir string) {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		fmt.Println("Warning: failed to create directory:", dir, err)
 	}
-
 }
 
 func main() {
@@ -47,12 +44,8 @@ func main() {
 	flag.Usage = Usage
 	flag.Parse()
 
-	// We accept either one directory or a list of files. Which do we have?
-	args := flag.Args()
-	if len(args) == 0 {
-		// Default: process whole package in current directory.
-		args = []string{"."}
-	}
+	// process whole package in current directory.
+	args := []string{"."}
 
 	// Parse the package once.
 	var dir string
@@ -66,7 +59,6 @@ func main() {
 	}
 
 	g.outputDir = *outputDir
-
 	g.pkgPath = *packagePath
 
 	mkDir(g.outputDir + "/jsonx")
@@ -103,13 +95,6 @@ func (g *Generator) Printf(format string, args ...interface{}) {
 	fmt.Fprintf(&g.buf, format, args...)
 }
 
-type Type struct {
-	name     string
-	baseName string
-	values   []Value // Accumulator for constant values of that type.
-	pkgName  string
-}
-
 // File holds a single parsed file and associated data.
 type File struct {
 	pkg  *Package  // Package to which this file belongs.
@@ -117,6 +102,12 @@ type File struct {
 	// These fields are reset for each type being generated.
 	types      []Type // Accumulator for all alias types (which is a built in type)
 	trimPrefix string
+}
+
+func (f *File) setPkgPath(pkgPath string) {
+	for i, _ := range f.types {
+		f.types[i].pkgPath = pkgPath
+	}
 }
 
 type Package struct {
@@ -208,37 +199,6 @@ func (pkg *Package) check(fs *token.FileSet, astFiles []*ast.File) {
 	pkg.typesPkg = typesPkg
 }
 
-func (g *Generator) checkError(typ *Type) bool {
-	dupVal := make(map[string]bool)
-	for _, v := range typ.values {
-		_, ok := dupVal[v.str]
-		if !ok {
-			dupVal[v.str] = true
-		} else {
-			fmt.Println("Error: Duplicate enum found in type:", typ.name, " name:", v.name, dupVal, typ.values)
-
-			return true
-		}
-	}
-	if typ.baseName == "int" || typ.baseName == "float64" {
-		dupComment := make(map[string]bool)
-		for _, v := range typ.values {
-			if v.comment == "" {
-				fmt.Println("Error: No comment found in int/float64 type enum type:", typ.name, " name:", v.name)
-				return true
-			}
-			_, ok := dupComment[v.comment]
-			if !ok {
-				dupComment[v.comment] = true
-			} else {
-				fmt.Println("Error: Duplicate enum comment found in type:", typ.name, " name:", v.name)
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // generate produces the String method for the named type.
 func (g *Generator) generate() {
 	for _, file := range g.pkg.files {
@@ -247,54 +207,19 @@ func (g *Generator) generate() {
 
 		if file.file != nil {
 			ast.Inspect(file.file, file.genDecl)
-			//fmt.Println(g.pkg.name, file)
-		}
 
-		for i, _ := range file.types {
-			//fmt.Println(file.types[i], "\n\n\n")
-			g.checkError(&file.types[i])
-			if len(file.types[i].values) == 0 {
-				//Not a enum type
-				g.createNullForNonEnums(&file.types[i])
-			} else {
-				switch file.types[i].baseName {
-				case "string":
-					g.createNullForStringEnum(&file.types[i])
-				case "int":
-					g.createNullForIntEnum(&file.types[i])
-				default:
-				}
+			file.setPkgPath(g.pkgPath)
+
+			for i, _ := range file.types {
+				file.types[i].Check()
+				g.generateCode(&file.types[i])
+
 			}
 		}
 	}
 
-	var coreTypes []Type
-	coreTypes = append(coreTypes, Type{
-		name:     "Int",
-		baseName: "int",
-		values:   []Value{},
-		pkgName:  "",
-	})
-	coreTypes = append(coreTypes, Type{
-		name:     "String",
-		baseName: "string",
-		values:   []Value{},
-		pkgName:  "",
-	})
-	coreTypes = append(coreTypes, Type{
-		name:     "Float64",
-		baseName: "float64",
-		values:   []Value{},
-		pkgName:  "",
-	})
-	coreTypes = append(coreTypes, Type{
-		name:     "Bool",
-		baseName: "bool",
-		values:   []Value{},
-		pkgName:  "",
-	})
 	for i, _ := range coreTypes {
-		g.createNullForCoreType(&coreTypes[i])
+		g.generateCode(&coreTypes[i])
 	}
 
 }
@@ -310,40 +235,6 @@ func (g *Generator) format(buf *bytes.Buffer) []byte {
 		return buf.Bytes()
 	}
 	return src
-}
-
-// Value represents a declared constant.
-type Value struct {
-	typ  string //type name
-	name string // The name of the constant.
-	// The value is stored as a bit pattern alone. The boolean tells us
-	// whether to interpret it as an int64 or a uint64; the only place
-	// this matters is when sorting.
-	// Much of the time the str field is all we need; it is printed
-	// by Value.String.
-	value   uint64 // Will be converted to int64 when needed.
-	signed  bool   // Whether the constant is a signed type.
-	str     string // The string representation given by the "go/exact" package.
-	comment string
-	kind    exact.Kind
-}
-
-func (v *Value) String() string {
-	return v.str
-}
-
-// byValue lets us sort the constants into increasing order.
-// We take care in the Less method to sort in signed or unsigned order,
-// as appropriate.
-type byValue []Value
-
-func (b byValue) Len() int      { return len(b) }
-func (b byValue) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
-func (b byValue) Less(i, j int) bool {
-	if b[i].signed {
-		return int64(b[i].value) < int64(b[j].value)
-	}
-	return b[i].value < b[j].value
 }
 
 // genDecl processes one declaration clause.
@@ -448,19 +339,6 @@ func (f *File) genDecl(node ast.Node) bool {
 	return false
 }
 
-const stringHeader = `
-package %s
-
-`
-
-const stringImport = `
-import (
-	"log"
-	"runtime/debug"
-	%s
-)
-`
-
 func (g *Generator) appendInAllType(typeName string) error {
 	nullDir := fmt.Sprintf("%s/null", g.outputDir)
 	data, err := ioutil.ReadFile(nullDir + "/all_types.go")
@@ -504,201 +382,11 @@ func (g *Generator) createJsonxLib() error {
 	return nil
 }
 
-func (g *Generator) createNullForStringEnum(typ *Type) {
+func (g *Generator) generateCode(typ *Type) {
 	//writing in the null_types.go map
 	g.appendInAllType(typ.name)
 
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, basicHeaderCode, g.pkgPath+"/"+typ.pkgName)
-
-	t := template.Must(template.New("null_string").Parse(basicBodyCode))
-
-	err := t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	var isValueCode string
-	if len(typ.values) > 5 {
-		isValueCode = generateStringEnumMap_IsValue(typ)
-	} else {
-		isValueCode = generateStringEnumSwitch_IsValue(typ)
-	}
-
-	t = template.Must(template.New("is_value").Parse(isValueCode))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	t = template.Must(template.New("marshal").Parse(basicMarshalCode))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	nullDir := fmt.Sprintf("%s/null", g.outputDir)
-	typeFilePath := nullDir + "/" + strings.ToLower(typ.name) + ".go"
-
-	if err := ioutil.WriteFile(typeFilePath, g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write file:", typeFilePath, " err:", err)
-	}
-}
-
-func (g *Generator) createNullForIntEnum(typ *Type) {
-	//writing in the null_types.go map
-	g.appendInAllType(typ.name)
-
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, basicHeaderCode, g.pkgPath+"/"+typ.pkgName)
-	t := template.Must(template.New("null_basic_body").Parse(basicBodyCode))
-
-	err := t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	var isValueCode string
-	if len(typ.values) > 10 {
-		isValueCode = generateStringEnumMap_IsValue(typ)
-	} else {
-		isValueCode = generateStringEnumSwitch_IsValue(typ)
-	}
-
-	t = template.Must(template.New("is_value").Parse(isValueCode))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	t = template.Must(template.New("marshal").Parse(generateIntMarshal(typ)))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	nullDir := fmt.Sprintf("%s/null", g.outputDir)
-	typeFilePath := nullDir + "/" + strings.ToLower(typ.name) + ".go"
-
-	if err := ioutil.WriteFile(typeFilePath, g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write file:", typeFilePath, " err:", err)
-	}
-}
-
-func (g *Generator) createNullForNonEnums(typ *Type) {
-	//writing in the null_types.go map
-	g.appendInAllType(typ.name)
-
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, basicHeaderCode, g.pkgPath+"/"+typ.pkgName)
-	t := template.Must(template.New("null_basic_body").Parse(basicBodyCode))
-
-	err := t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	t = template.Must(template.New("marshal").Parse(basicMarshalCode))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.pkgName + "." + typ.name,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-
-	nullDir := fmt.Sprintf("%s/null", g.outputDir)
-	typeFilePath := nullDir + "/" + strings.ToLower(typ.name) + ".go"
-
-	if err := ioutil.WriteFile(typeFilePath, g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write file:", typeFilePath, " err:", err)
-	}
-}
-
-func (g *Generator) createNullForCoreType(typ *Type) {
-	//writing in the null_types.go map
-	g.appendInAllType(typ.name)
-
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, coreHeaderCode)
-	t := template.Must(template.New("null_basic_body").Parse(basicBodyCode))
-
-	err := t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.baseName,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
-	t = template.Must(template.New("marshal").Parse(basicMarshalCode))
-	err = t.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		typ.baseName,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-	}
+	buf := typ.generateCode()
 
 	nullDir := fmt.Sprintf("%s/null", g.outputDir)
 	typeFilePath := nullDir + "/" + strings.ToLower(typ.name) + ".go"
