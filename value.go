@@ -41,6 +41,9 @@ func (vs *ValueSlice) generateSwitchCode(pkgName string) string {
 	return result
 }
 
+//Returns: strings containing code map key true flag
+// enum.Active: true,
+// enum.InActive: true,
 func (vs *ValueSlice) generateMapValue(pkgName string) string {
 	result := ""
 	for i, _ := range *vs {
@@ -49,6 +52,9 @@ func (vs *ValueSlice) generateMapValue(pkgName string) string {
 	return result
 }
 
+//Returns: strings containing code map key values
+// enum.Active: "Active",
+// enum.InActive: "InActive",
 func (vs *ValueSlice) generateMapKeyValue(pkgName string) string {
 	result := ""
 	for i, _ := range *vs {
