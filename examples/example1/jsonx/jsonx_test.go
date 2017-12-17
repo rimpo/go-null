@@ -4,9 +4,10 @@ package jsonx
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/rimpo/go-null/examples/example1/null"
 	"github.com/tidwall/gjson"
-	"testing"
 )
 
 func TestNullBuiltInTypes(t *testing.T) {
@@ -33,19 +34,19 @@ func TestNullBuiltInTypes(t *testing.T) {
 	x := gjson.Get(j, "x")
 
 	if x.String() != a.X.Get() {
-		t.Errorf("Expected:%!v(MISSING) Got:%!v(MISSING)", a.X.Get(), x.String())
+		t.Errorf("Expected:%v Got:%v", a.X.Get(), x.String())
 	}
 
 	y := gjson.Get(j, "b.y")
 
 	if y.Int() != int64(a.B.Y.Get()) {
-		t.Errorf("Expected:%!v(MISSING) Got:%!v(MISSING)", a.B.Y.Get(), y.Int())
+		t.Errorf("Expected:%v Got:%v", a.B.Y.Get(), y.Int())
 	}
 
 	z := gjson.Get(j, "b.c.z")
 
 	if z.Float() != a.B.C.Z.Get() {
-		t.Errorf("Expected:%!v(MISSING) Got:%!v(MISSING)", a.B.C.Z.Get(), z.Float())
+		t.Errorf("Expected:%v Got:%v", a.B.C.Z.Get(), z.Float())
 	}
 
 }

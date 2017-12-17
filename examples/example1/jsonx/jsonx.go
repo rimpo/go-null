@@ -77,7 +77,7 @@ func writeValue(jsonData *bytes.Buffer, tag string, v interface{}) error {
 	jsonData.WriteString(`":`)
 	b, err := m.MarshalJSON()
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to MarshalJSON %!v(MISSING)", err))
+		return errors.New(fmt.Sprintf("Failed to MarshalJSON %v", err))
 	}
 	jsonData.Write(b)
 	return nil
@@ -90,7 +90,7 @@ func writeValueWithoutTag(jsonData *bytes.Buffer, v interface{}) error {
 	}
 	b, err := m.MarshalJSON()
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to MarshalJSON %!v(MISSING)", err))
+		return errors.New(fmt.Sprintf("Failed to MarshalJSON %v", err))
 	}
 	jsonData.Write(b)
 	return nil
