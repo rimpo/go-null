@@ -41,6 +41,16 @@ func (t *TypeNamePrivacy) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
+func (t *TypeNamePrivacy) SetSafe(val enum.TypeNamePrivacy) {
+	if !IsValueTypeNamePrivacy(val) {
+		log.Printf("ERROR: Unknown value:%v assigned to type:TypeNamePrivacy!!.\n", val)
+		debug.PrintStack()
+	}
+	t.val = val
+	t.valid = true
+}
+
 func IsValueTypeNamePrivacy(val enum.TypeNamePrivacy) bool {
 	switch val {
 	case enum.HideFirstName:

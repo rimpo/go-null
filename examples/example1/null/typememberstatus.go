@@ -41,6 +41,16 @@ func (t *TypeMemberStatus) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
+func (t *TypeMemberStatus) SetSafe(val enum.TypeMemberStatus) {
+	if !IsValueTypeMemberStatus(val) {
+		log.Printf("ERROR: Unknown value:%v assigned to type:TypeMemberStatus!!.\n", val)
+		debug.PrintStack()
+	}
+	t.val = val
+	t.valid = true
+}
+
 func IsValueTypeMemberStatus(val enum.TypeMemberStatus) bool {
 	switch val {
 	case enum.MemberActivated:

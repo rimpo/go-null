@@ -41,6 +41,16 @@ func (t *TypeShowPhoto) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
+func (t *TypeShowPhoto) SetSafe(val enum.TypeShowPhoto) {
+	if !IsValueTypeShowPhoto(val) {
+		log.Printf("ERROR: Unknown value:%v assigned to type:TypeShowPhoto!!.\n", val)
+		debug.PrintStack()
+	}
+	t.val = val
+	t.valid = true
+}
+
 func IsValueTypeShowPhoto(val enum.TypeShowPhoto) bool {
 	switch val {
 	case enum.ShowPhoto:

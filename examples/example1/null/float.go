@@ -41,6 +41,12 @@ func (t *Float) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
+func (t *Float) SetSafe(val typ.Float) {
+	t.val = val
+	t.valid = true
+}
+
 func (t *Float) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.val)
 }

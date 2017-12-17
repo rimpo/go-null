@@ -84,6 +84,15 @@ func (t *{{.TypeName}}) IsNull() bool {
 
 const basicSetSafeCode = `
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
+func (t *{{.TypeName}}) SetSafe(val {{.BuiltInTypeName}}) {
+	t.val = val
+	t.valid = true
+}
+
+`
+const setSafeIsValueCode = `
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *{{.TypeName}}) SetSafe(val {{.BuiltInTypeName}}) {
 	if !IsValue{{.TypeName}}(val) {
@@ -155,6 +164,7 @@ func (t *{{.TypeName}}) MarshalJSON() ([]byte, error) {
 var templateBasicHeaderCode = template.Must(template.New("tempalteBasicHeaderCode").Parse(basicHeaderCode))
 var templateBasicBodyCode = template.Must(template.New("templateBasicBodyCode").Parse(basicBodyCode))
 var templateBasicSetSafeCode = template.Must(template.New("templateBasicSetSafeCode").Parse(basicSetSafeCode))
+var templateSetSafeIsValueCode = template.Must(template.New("templateSetSafeIsValueCode").Parse(setSafeIsValueCode))
 var templateIsValueSwitchCode = template.Must(template.New("templateIsValueSwitchCode").Parse(isValueSwitchCode))
 var templateIsValueMapCode = template.Must(template.New("templateIsValueMapCode").Parse(isValueMapCode))
 var templateBasicMarshalCode = template.Must(template.New("templateBasicMarshalCode").Parse(basicMarshalCode))

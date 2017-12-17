@@ -41,6 +41,16 @@ func (t *TypePhonePrivacy) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
+func (t *TypePhonePrivacy) SetSafe(val enum.TypePhonePrivacy) {
+	if !IsValueTypePhonePrivacy(val) {
+		log.Printf("ERROR: Unknown value:%v assigned to type:TypePhonePrivacy!!.\n", val)
+		debug.PrintStack()
+	}
+	t.val = val
+	t.valid = true
+}
+
 func IsValueTypePhonePrivacy(val enum.TypePhonePrivacy) bool {
 	switch val {
 	case enum.PhoneVisibleToPremium:

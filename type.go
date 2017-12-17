@@ -140,6 +140,40 @@ func (typ *Type) generateBodyCode() string {
 	return buf.String()
 }
 
+func (typ *Type) generateSetSafeCode() string {
+	var buf bytes.Buffer
+	var err error
+
+	if !typ.IsEnum() || typ.IsCore() {
+		var builtInName string
+		if typ.IsCore() {
+			builtInName = typ.baseName
+		} else {
+			builtInName = typ.pkgName + "." + typ.name
+		}
+		err = templateBasicSetSafeCode.Execute(&buf, struct {
+			TypeName        string
+			BuiltInTypeName string
+		}{
+			typ.name,
+			builtInName,
+		})
+	} else {
+		err = templateSetSafeIsValueCode.Execute(&buf, struct {
+			TypeName        string
+			BuiltInTypeName string
+		}{
+			typ.name,
+			typ.pkgName + "." + typ.name,
+		})
+	}
+	if err != nil {
+		log.Fatalf("Execution failed:%s", err)
+		return ""
+	}
+	return buf.String()
+}
+
 func (typ *Type) generateIsValueCode() string {
 	if !typ.IsEnum() || typ.IsCore() {
 		return ""
@@ -211,6 +245,7 @@ func (typ *Type) generateCode() bytes.Buffer {
 	var buf bytes.Buffer
 	buf.WriteString(typ.generateHeaderCode())
 	buf.WriteString(typ.generateBodyCode())
+	buf.WriteString(typ.generateSetSafeCode())
 	buf.WriteString(typ.generateIsValueCode())
 	buf.WriteString(typ.generateMarshalCode())
 

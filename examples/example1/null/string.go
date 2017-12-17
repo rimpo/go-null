@@ -39,6 +39,12 @@ func (t *String) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
+func (t *String) SetSafe(val string) {
+	t.val = val
+	t.valid = true
+}
+
 func (t *String) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.val)
 }

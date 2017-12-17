@@ -41,6 +41,12 @@ func (t *DateTimeInt) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
+func (t *DateTimeInt) SetSafe(val typ.DateTimeInt) {
+	t.val = val
+	t.valid = true
+}
+
 func (t *DateTimeInt) MarshalJSON() ([]byte, error) {
 	return json.Marshal(t.val)
 }

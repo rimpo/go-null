@@ -41,6 +41,16 @@ func (t *TypeSample2) IsNull() bool {
 	return !t.valid
 }
 
+//Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
+func (t *TypeSample2) SetSafe(val enum.TypeSample2) {
+	if !IsValueTypeSample2(val) {
+		log.Printf("ERROR: Unknown value:%v assigned to type:TypeSample2!!.\n", val)
+		debug.PrintStack()
+	}
+	t.val = val
+	t.valid = true
+}
+
 var (
 	mapTypeSample2 = map[enum.TypeSample2]bool{
 		enum.Sample2_1:  true,
