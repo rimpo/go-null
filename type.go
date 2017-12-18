@@ -45,6 +45,10 @@ var coreTypes = []Type{
 	},
 }
 
+func (typ *Type) IsSpecialMapType() bool {
+	return typ.baseName == "TypeMapInt" || typ.baseName == "TypeMapString"
+}
+
 func (typ *Type) IsNumerical() bool {
 	return typ.baseName == "int" || typ.baseName == "float64"
 }

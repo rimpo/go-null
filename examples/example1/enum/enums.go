@@ -2,6 +2,10 @@ package enum
 
 //go:generate go-null -package=github.com/rimpo/go-null/examples/example1 -output=..
 
+type TypeMapInt int
+
+type TypeMapString string
+
 type TypeMemberStatus string
 
 const (
@@ -64,3 +68,10 @@ const (
 	PhoneVisibleToPreimumWishToConnect                  = "When I Contact"
 	PhoneNumberHide                                     = "Hide My Number"
 )
+
+var MapTypeABCIDToText = map[int]string{
+	1: "1",
+	2: "2",
+}
+
+type TypeABC TypeMapInt
