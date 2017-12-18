@@ -1,18 +1,17 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"log"
 )
 
 type Type struct {
-	name      string     // name of the type
-	baseName  string     // built in type ie. int, string, float64, bool
-	values    ValueSlice // Accumulator for constant value of this type.
-	pkgPath   string     // path of the package
-	pkgName   string     //source package name; package where type is declared
-	numerical bool       // numerical is true for float64 and int
+	name         string     // name of the type
+	baseName     string     // built in type ie. int, string, float64, bool
+	values       ValueSlice // Accumulator for constant value of this type.
+	pkgPath      string     // path of the package
+	pkgName      string     //source package name; package where type is declared
+	numerical    bool       // numerical is true for float64 and int
+	templateType TemplateType
 }
 
 var coreTypes = []Type{
@@ -93,167 +92,4 @@ func (typ *Type) Check() bool {
 		}
 	}
 	return false
-}
-
-func (typ *Type) generateHeaderCode() string {
-	var buf bytes.Buffer
-	var err error
-	if typ.IsCore() {
-		return coreHeaderCode
-	} else {
-		err = templateBasicHeaderCode.Execute(&buf, struct {
-			ImportLib string
-		}{
-			"\"" + typ.pkgPath + "/" + typ.pkgName + "\"",
-		})
-	}
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return ""
-	}
-	return buf.String()
-}
-
-func (typ *Type) generateBodyCode() string {
-	var buf bytes.Buffer
-	var builtInTypeName string
-
-	if typ.IsCore() {
-		builtInTypeName = typ.baseName
-	} else {
-		builtInTypeName = typ.pkgName + "." + typ.name
-	}
-
-	err := templateBasicBodyCode.Execute(&buf, struct {
-		TypeName        string
-		BuiltInTypeName string
-	}{
-		typ.name,
-		builtInTypeName,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return ""
-	}
-	return buf.String()
-}
-
-func (typ *Type) generateSetSafeCode() string {
-	var buf bytes.Buffer
-	var err error
-
-	if !typ.IsEnum() || typ.IsCore() {
-		var builtInName string
-		if typ.IsCore() {
-			builtInName = typ.baseName
-		} else {
-			builtInName = typ.pkgName + "." + typ.name
-		}
-		err = templateBasicSetSafeCode.Execute(&buf, struct {
-			TypeName        string
-			BuiltInTypeName string
-		}{
-			typ.name,
-			builtInName,
-		})
-	} else {
-		err = templateSetSafeIsValueCode.Execute(&buf, struct {
-			TypeName        string
-			BuiltInTypeName string
-		}{
-			typ.name,
-			typ.pkgName + "." + typ.name,
-		})
-	}
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return ""
-	}
-	return buf.String()
-}
-
-func (typ *Type) generateIsValueCode() string {
-	if !typ.IsEnum() || typ.IsCore() {
-		return ""
-	}
-	var buf bytes.Buffer
-	var err error
-	if len(typ.values) > 10 {
-		err = templateIsValueMapCode.Execute(&buf, struct {
-			TypeName        string
-			BuiltInTypeName string
-			MapValues       string
-		}{
-			typ.name,
-			typ.pkgName + "." + typ.name,
-			typ.values.generateMapValue(typ.pkgName),
-		})
-	} else {
-		err = templateIsValueSwitchCode.Execute(&buf, struct {
-			TypeName        string
-			BuiltInTypeName string
-			SwitchCode      string
-		}{
-			typ.name,
-			typ.pkgName + "." + typ.name,
-			typ.values.generateSwitchCode(typ.pkgName),
-		})
-	}
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return ""
-	}
-	return buf.String()
-}
-
-func (typ *Type) generateMarshalCode() string {
-	var buf bytes.Buffer
-	var err error
-	if typ.IsEnum() && typ.IsNumerical() {
-		//enum type
-		err = templateNumericalMapMarshalCode.Execute(&buf, struct {
-			TypeName        string
-			BuiltInTypeName string
-			MapValues       string
-		}{
-			typ.name,
-			typ.pkgName + "." + typ.name,
-			typ.values.generateMapKeyValue(typ.pkgName),
-		})
-	} else {
-		err = templateBasicMarshalCode.Execute(&buf, struct {
-			TypeName string
-		}{
-			typ.name,
-		})
-	}
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return ""
-	}
-
-	return buf.String()
-}
-
-func (typ *Type) generateCode() bytes.Buffer {
-	//writing in the null_types.go map
-	//g.appendInAllType(typ.name)
-
-	var buf bytes.Buffer
-	buf.WriteString(typ.generateHeaderCode())
-	buf.WriteString(typ.generateBodyCode())
-	buf.WriteString(typ.generateSetSafeCode())
-	buf.WriteString(typ.generateIsValueCode())
-	buf.WriteString(typ.generateMarshalCode())
-
-	/*nullDir := fmt.Sprintf("%s/null", g.outputDir)
-	typeFilePath := nullDir + "/" + strings.ToLower(typ.name) + ".go"
-
-	if err := ioutil.WriteFile(typeFilePath, g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write file:", typeFilePath, " err:", err)
-	}*/
-	return buf
 }

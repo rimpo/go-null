@@ -51,21 +51,33 @@ func (t *TypeNamePrivacy) SetSafe(val enum.TypeNamePrivacy) {
 	t.valid = true
 }
 
-func IsValueTypeNamePrivacy(val enum.TypeNamePrivacy) bool {
+var (
+	mapTypeNamePrivacyIDToText = map[enum.TypeNamePrivacy]string{
+		enum.HideFirstName:    "partial_name",
+		enum.HideLastName:     "partial_name_inverse",
+		enum.DisplayFullName:  "full_name",
+		enum.DisplayProfileID: "profile_id",
+	}
+)
+
+func _LookupTypeNamePrivacyIDToText(val enum.TypeNamePrivacy) (string, bool) {
 	switch val {
 	case enum.HideFirstName:
-		return true
+		return "partial_name", true
 	case enum.HideLastName:
-		return true
+		return "partial_name_inverse", true
 	case enum.DisplayFullName:
-		return true
+		return "full_name", true
 	case enum.DisplayProfileID:
-		return true
-
+		return "profile_id", true
 	default:
-		return false
-
+		return "", false
 	}
+}
+
+func IsValueTypeNamePrivacy(val enum.TypeNamePrivacy) bool {
+	_, ok := _LookupTypeNamePrivacyIDToText(val)
+	return ok
 }
 
 func (t *TypeNamePrivacy) MarshalJSON() ([]byte, error) {

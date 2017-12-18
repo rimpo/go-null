@@ -51,33 +51,36 @@ func (t *TypePhotoStatus) SetSafe(val enum.TypePhotoStatus) {
 	t.valid = true
 }
 
-func IsValueTypePhotoStatus(val enum.TypePhotoStatus) bool {
-	switch val {
-	case enum.PhotoNotAvailable:
-		return true
-	case enum.PhotoComingSoon:
-		return true
-	case enum.PhotoAvailable:
-		return true
-
-	default:
-		return false
-
-	}
-}
-
 var (
-	mapTypePhotoStatusNumToText = map[enum.TypePhotoStatus]string{
+	mapTypePhotoStatusIDToText = map[enum.TypePhotoStatus]string{
 		enum.PhotoNotAvailable: "not available",
 		enum.PhotoComingSoon:   "coming soon",
 		enum.PhotoAvailable:    "available",
 	}
 )
 
+func _LookupTypePhotoStatusIDToText(val enum.TypePhotoStatus) (string, bool) {
+	switch val {
+	case enum.PhotoNotAvailable:
+		return "not available", true
+	case enum.PhotoComingSoon:
+		return "coming soon", true
+	case enum.PhotoAvailable:
+		return "available", true
+	default:
+		return "", false
+	}
+}
+
+func IsValueTypePhotoStatus(val enum.TypePhotoStatus) bool {
+	_, ok := _LookupTypePhotoStatusIDToText(val)
+	return ok
+}
+
 func (t *TypePhotoStatus) MarshalJSON() ([]byte, error) {
-	v, ok := mapTypePhotoStatusNumToText[t.val]
+	val, ok := _LookupTypePhotoStatusIDToText(t.val)
 	if ok {
-		return json.Marshal(v)
+		return json.Marshal(val)
 	}
 	return json.Marshal(t.val)
 }

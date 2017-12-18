@@ -1,7 +1,6 @@
 package null
 
 //Auto-generated code; DONT EDIT THIS CODE
-
 var (
 	AllTypes = map[string]bool{
 		"TypeSample1":      true,

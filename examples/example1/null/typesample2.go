@@ -52,31 +52,7 @@ func (t *TypeSample2) SetSafe(val enum.TypeSample2) {
 }
 
 var (
-	mapTypeSample2 = map[enum.TypeSample2]bool{
-		enum.Sample2_1:  true,
-		enum.Sample2_2:  true,
-		enum.Sample2_3:  true,
-		enum.Sample2_4:  true,
-		enum.Sample2_5:  true,
-		enum.Sample2_6:  true,
-		enum.Sample2_7:  true,
-		enum.Sample2_8:  true,
-		enum.Sample2_9:  true,
-		enum.Sample2_10: true,
-		enum.Sample2_11: true,
-	}
-)
-
-func IsValueTypeSample2(val enum.TypeSample2) bool {
-	_, ok := mapTypeSample2[val]
-	if !ok {
-		return false
-	}
-	return true
-}
-
-var (
-	mapTypeSample2NumToText = map[enum.TypeSample2]string{
+	mapTypeSample2IDToText = map[enum.TypeSample2]string{
 		enum.Sample2_1:  "A",
 		enum.Sample2_2:  "B",
 		enum.Sample2_3:  "C",
@@ -91,10 +67,21 @@ var (
 	}
 )
 
+func _LookupTypeSample2IDToText(val enum.TypeSample2) (string, bool) {
+	res, ok := mapTypeSample2IDToText[val]
+	return res, ok
+
+}
+
+func IsValueTypeSample2(val enum.TypeSample2) bool {
+	_, ok := _LookupTypeSample2IDToText(val)
+	return ok
+}
+
 func (t *TypeSample2) MarshalJSON() ([]byte, error) {
-	v, ok := mapTypeSample2NumToText[t.val]
+	val, ok := _LookupTypeSample2IDToText(t.val)
 	if ok {
-		return json.Marshal(v)
+		return json.Marshal(val)
 	}
 	return json.Marshal(t.val)
 }

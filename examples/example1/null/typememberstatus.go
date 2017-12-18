@@ -51,21 +51,33 @@ func (t *TypeMemberStatus) SetSafe(val enum.TypeMemberStatus) {
 	t.valid = true
 }
 
-func IsValueTypeMemberStatus(val enum.TypeMemberStatus) bool {
+var (
+	mapTypeMemberStatusIDToText = map[enum.TypeMemberStatus]string{
+		enum.MemberActivated:    "Activated",
+		enum.MemberDeactivated:  "Deactivated",
+		enum.MemberToBeScreened: "To Be Screened",
+		enum.MemberSuspended:    "Suspended",
+	}
+)
+
+func _LookupTypeMemberStatusIDToText(val enum.TypeMemberStatus) (string, bool) {
 	switch val {
 	case enum.MemberActivated:
-		return true
+		return "Activated", true
 	case enum.MemberDeactivated:
-		return true
+		return "Deactivated", true
 	case enum.MemberToBeScreened:
-		return true
+		return "To Be Screened", true
 	case enum.MemberSuspended:
-		return true
-
+		return "Suspended", true
 	default:
-		return false
-
+		return "", false
 	}
+}
+
+func IsValueTypeMemberStatus(val enum.TypeMemberStatus) bool {
+	_, ok := _LookupTypeMemberStatusIDToText(val)
+	return ok
 }
 
 func (t *TypeMemberStatus) MarshalJSON() ([]byte, error) {

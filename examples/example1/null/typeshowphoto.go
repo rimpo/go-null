@@ -51,31 +51,48 @@ func (t *TypeShowPhoto) SetSafe(val enum.TypeShowPhoto) {
 	t.valid = true
 }
 
-func IsValueTypeShowPhoto(val enum.TypeShowPhoto) bool {
+var (
+	mapTypeShowPhotoIDToText = map[enum.TypeShowPhoto]string{
+		enum.ShowPhoto:                    "show_photo",
+		enum.ShowPhotoNotAvailable:        "show_photo_not_available",
+		enum.ShowRequestPhoto:             "show_request_photo",
+		enum.ShowRequestPhotoSent:         "show_request_photo_sent",
+		enum.ShowRequestPhotoPassword:     "show_request_photo_password",
+		enum.ShowRequestPhotoPasswordSent: "show_request_photo_password_sent",
+		enum.ShowAddPhoto:                 "show_add_photo",
+		enum.ShowPhotoComingSoon:          "show_comming_soon",
+		enum.ShowMemberPhotoNotScreened:   "show_member_photo_not_screened",
+	}
+)
+
+func _LookupTypeShowPhotoIDToText(val enum.TypeShowPhoto) (string, bool) {
 	switch val {
 	case enum.ShowPhoto:
-		return true
+		return "show_photo", true
 	case enum.ShowPhotoNotAvailable:
-		return true
+		return "show_photo_not_available", true
 	case enum.ShowRequestPhoto:
-		return true
+		return "show_request_photo", true
 	case enum.ShowRequestPhotoSent:
-		return true
+		return "show_request_photo_sent", true
 	case enum.ShowRequestPhotoPassword:
-		return true
+		return "show_request_photo_password", true
 	case enum.ShowRequestPhotoPasswordSent:
-		return true
+		return "show_request_photo_password_sent", true
 	case enum.ShowAddPhoto:
-		return true
+		return "show_add_photo", true
 	case enum.ShowPhotoComingSoon:
-		return true
+		return "show_comming_soon", true
 	case enum.ShowMemberPhotoNotScreened:
-		return true
-
+		return "show_member_photo_not_screened", true
 	default:
-		return false
-
+		return "", false
 	}
+}
+
+func IsValueTypeShowPhoto(val enum.TypeShowPhoto) bool {
+	_, ok := _LookupTypeShowPhotoIDToText(val)
+	return ok
 }
 
 func (t *TypeShowPhoto) MarshalJSON() ([]byte, error) {

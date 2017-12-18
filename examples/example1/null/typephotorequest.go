@@ -51,27 +51,8 @@ func (t *TypePhotoRequest) SetSafe(val enum.TypePhotoRequest) {
 	t.valid = true
 }
 
-func IsValueTypePhotoRequest(val enum.TypePhotoRequest) bool {
-	switch val {
-	case enum.PhotoRequestNotAvailable:
-		return true
-	case enum.PhotoRequestSent:
-		return true
-	case enum.PhotoRequestAccepted:
-		return true
-	case enum.PhotoRequestRejected:
-		return true
-	case enum.PhotoRequestDelete:
-		return true
-
-	default:
-		return false
-
-	}
-}
-
 var (
-	mapTypePhotoRequestNumToText = map[enum.TypePhotoRequest]string{
+	mapTypePhotoRequestIDToText = map[enum.TypePhotoRequest]string{
 		enum.PhotoRequestNotAvailable: "photo request not available",
 		enum.PhotoRequestSent:         "photo request sent",
 		enum.PhotoRequestAccepted:     "photo request rejected",
@@ -80,10 +61,32 @@ var (
 	}
 )
 
+func _LookupTypePhotoRequestIDToText(val enum.TypePhotoRequest) (string, bool) {
+	switch val {
+	case enum.PhotoRequestNotAvailable:
+		return "photo request not available", true
+	case enum.PhotoRequestSent:
+		return "photo request sent", true
+	case enum.PhotoRequestAccepted:
+		return "photo request rejected", true
+	case enum.PhotoRequestRejected:
+		return "photo rejected", true
+	case enum.PhotoRequestDelete:
+		return "deleted", true
+	default:
+		return "", false
+	}
+}
+
+func IsValueTypePhotoRequest(val enum.TypePhotoRequest) bool {
+	_, ok := _LookupTypePhotoRequestIDToText(val)
+	return ok
+}
+
 func (t *TypePhotoRequest) MarshalJSON() ([]byte, error) {
-	v, ok := mapTypePhotoRequestNumToText[t.val]
+	val, ok := _LookupTypePhotoRequestIDToText(t.val)
 	if ok {
-		return json.Marshal(v)
+		return json.Marshal(val)
 	}
 	return json.Marshal(t.val)
 }

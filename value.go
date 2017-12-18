@@ -41,6 +41,20 @@ func (vs *ValueSlice) generateSwitchCode(pkgName string) string {
 	return result
 }
 
+//Returns: strings containing code switch
+// case enum.Active:
+//	return "Active"
+// case enum.InActive:
+// return "InActive"
+func (vs *ValueSlice) generateSwitchValue(pkgName string) string {
+	result := ""
+	for i, _ := range *vs {
+		result += "\tcase " + pkgName + "." + (*vs)[i].name + ":\n"
+		result += "\t\treturn true\n"
+	}
+	return result
+}
+
 //Returns: strings containing code map key true flag
 // enum.Active: true,
 // enum.InActive: true,

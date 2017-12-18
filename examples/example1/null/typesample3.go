@@ -51,33 +51,36 @@ func (t *TypeSample3) SetSafe(val enum.TypeSample3) {
 	t.valid = true
 }
 
-func IsValueTypeSample3(val enum.TypeSample3) bool {
-	switch val {
-	case enum.Sample3_1:
-		return true
-	case enum.Sample3_2:
-		return true
-	case enum.Sample3_3:
-		return true
-
-	default:
-		return false
-
-	}
-}
-
 var (
-	mapTypeSample3NumToText = map[enum.TypeSample3]string{
+	mapTypeSample3IDToText = map[enum.TypeSample3]string{
 		enum.Sample3_1: "One",
 		enum.Sample3_2: "Two",
 		enum.Sample3_3: "Three",
 	}
 )
 
+func _LookupTypeSample3IDToText(val enum.TypeSample3) (string, bool) {
+	switch val {
+	case enum.Sample3_1:
+		return "One", true
+	case enum.Sample3_2:
+		return "Two", true
+	case enum.Sample3_3:
+		return "Three", true
+	default:
+		return "", false
+	}
+}
+
+func IsValueTypeSample3(val enum.TypeSample3) bool {
+	_, ok := _LookupTypeSample3IDToText(val)
+	return ok
+}
+
 func (t *TypeSample3) MarshalJSON() ([]byte, error) {
-	v, ok := mapTypeSample3NumToText[t.val]
+	val, ok := _LookupTypeSample3IDToText(t.val)
 	if ok {
-		return json.Marshal(v)
+		return json.Marshal(val)
 	}
 	return json.Marshal(t.val)
 }

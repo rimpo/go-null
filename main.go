@@ -412,6 +412,7 @@ func (g *Generator) generateCode(typ *Type) {
 	//writing in the null_types.go map
 	g.appendInAllType(typ.name)
 
+	typ.setTemplateType()
 	buf := typ.generateCode()
 
 	nullDir := fmt.Sprintf("%s/null", g.outputDir)

@@ -51,19 +51,30 @@ func (t *TypePhonePrivacy) SetSafe(val enum.TypePhonePrivacy) {
 	t.valid = true
 }
 
-func IsValueTypePhonePrivacy(val enum.TypePhonePrivacy) bool {
+var (
+	mapTypePhonePrivacyIDToText = map[enum.TypePhonePrivacy]string{
+		enum.PhoneVisibleToPremium:              "Show All",
+		enum.PhoneVisibleToPreimumWishToConnect: "When I Contact",
+		enum.PhoneNumberHide:                    "Hide My Number",
+	}
+)
+
+func _LookupTypePhonePrivacyIDToText(val enum.TypePhonePrivacy) (string, bool) {
 	switch val {
 	case enum.PhoneVisibleToPremium:
-		return true
+		return "Show All", true
 	case enum.PhoneVisibleToPreimumWishToConnect:
-		return true
+		return "When I Contact", true
 	case enum.PhoneNumberHide:
-		return true
-
+		return "Hide My Number", true
 	default:
-		return false
-
+		return "", false
 	}
+}
+
+func IsValueTypePhonePrivacy(val enum.TypePhonePrivacy) bool {
+	_, ok := _LookupTypePhonePrivacyIDToText(val)
+	return ok
 }
 
 func (t *TypePhonePrivacy) MarshalJSON() ([]byte, error) {
