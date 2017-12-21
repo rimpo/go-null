@@ -44,6 +44,9 @@ func (t *{{.TypeName}}) IsNull() bool {
 	return !t.valid
 }
 
+{{.IsEmptyCode}}
+
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *{{.TypeName}}) SetSafe(val {{.SourceType}}) {
 	if !IsValue{{.TypeName}}(val) {

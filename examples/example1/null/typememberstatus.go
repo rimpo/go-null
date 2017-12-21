@@ -41,6 +41,10 @@ func (t *TypeMemberStatus) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeMemberStatus) IsEmpty() bool {
+	return t.IsNull() || len(string(t.val)) == 0
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeMemberStatus) SetSafe(val enum.TypeMemberStatus) {
 	if !IsValueTypeMemberStatus(val) {

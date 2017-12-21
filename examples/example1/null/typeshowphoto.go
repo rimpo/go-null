@@ -41,6 +41,10 @@ func (t *TypeShowPhoto) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeShowPhoto) IsEmpty() bool {
+	return t.IsNull() || len(string(t.val)) == 0
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeShowPhoto) SetSafe(val enum.TypeShowPhoto) {
 	if !IsValueTypeShowPhoto(val) {

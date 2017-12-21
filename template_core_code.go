@@ -42,6 +42,8 @@ func (t *{{.TypeName}}) IsNull() bool {
 	return !t.valid
 }
 
+{{.IsEmptyCode}}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
 func (t *{{.TypeName}}) SetSafe(val {{.SourceType}}) {
 	t.val = val

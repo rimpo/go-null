@@ -53,6 +53,10 @@ func (typ *Type) IsNumerical() bool {
 	return typ.baseName == "int" || typ.baseName == "float64"
 }
 
+func (typ *Type) IsStringType() bool {
+	return typ.baseName == "string" || typ.baseName == "TypeMapString"
+}
+
 func (typ *Type) IsCore() bool {
 	for i, _ := range coreTypes {
 		if typ.name == coreTypes[i].name {

@@ -41,6 +41,10 @@ func (t *TypeNamePrivacy) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeNamePrivacy) IsEmpty() bool {
+	return t.IsNull() || len(string(t.val)) == 0
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeNamePrivacy) SetSafe(val enum.TypeNamePrivacy) {
 	if !IsValueTypeNamePrivacy(val) {

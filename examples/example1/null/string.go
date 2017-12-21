@@ -39,6 +39,10 @@ func (t *String) IsNull() bool {
 	return !t.valid
 }
 
+func (t *String) IsEmpty() bool {
+	return t.IsNull() || len(string(t.val)) == 0
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)
 func (t *String) SetSafe(val string) {
 	t.val = val

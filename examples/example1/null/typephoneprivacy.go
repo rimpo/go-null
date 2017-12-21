@@ -41,6 +41,10 @@ func (t *TypePhonePrivacy) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypePhonePrivacy) IsEmpty() bool {
+	return t.IsNull() || len(string(t.val)) == 0
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypePhonePrivacy) SetSafe(val enum.TypePhonePrivacy) {
 	if !IsValueTypePhonePrivacy(val) {

@@ -145,20 +145,30 @@ func (typ *Type) getLookupCode() string {
 	}
 }
 
+func (typ *Type) getIsEmptyCode() string {
+	result := ""
+	if typ.IsStringType() {
+		return "func (t *" + typ.name + ") IsEmpty() bool {\n\treturn t.IsNull() || len(string(t.val)) == 0\n}"
+	}
+	return result
+}
+
 func (typ *Type) generateCode() bytes.Buffer {
 	var buf bytes.Buffer
 	err := typ.getTemplate().Execute(&buf, struct {
-		ImportLib  string
-		TypeName   string
-		SourceType string
-		MapValues  string
-		LookupCode string
+		ImportLib   string
+		TypeName    string
+		SourceType  string
+		MapValues   string
+		LookupCode  string
+		IsEmptyCode string
 	}{
 		typ.getImportLib(),
 		typ.name,
 		typ.getSourceType(),
 		typ.getMapValuesCode(),
 		typ.getLookupCode(),
+		typ.getIsEmptyCode(),
 	})
 	if err != nil {
 		log.Fatalf("Execution failed:%s", err)
