@@ -6,6 +6,19 @@
 
 go-null is a code generator for go. Alternative way of defining struct for representing json.
 
+## Usage
+
+TBD
+```
+go-null -package=<package path> -output=<generated code path>
+
+
+#Add below line on top of the enums and custom type packages for which you want to generate null types.
+#Note: choose any one file of the package and write once
+//go:generate go-null -package=github.com/rimpo/go-null/examples/examples1/ -output=..
+
+#null and jsonx package will be generated in path github.com/rimpo/go-null/examples/examples1/
+```
 
 ## Why?
 
@@ -97,18 +110,5 @@ All you have to to is now to add the null types in your json struct declaration.
 It also generates *jsonx* package which supports marshalling of null types (generated using the go-null command) and you can use *omitempty* to drop null values.
 
 
-
-## Usage
-
-```
-go-null -package=<package path> -output=<generated code path>
-
-
-#Add below line on top of the enums and custom type packages for which you want to generate null types.
-#Note: choose any one file of the package and write once
-//go:generate go-null -package=github.com/rimpo/go-null/examples/examples1/ -output=..
-
-#null and jsonx package will be generated in path github.com/rimpo/go-null/examples/examples1/
-```
 
 
