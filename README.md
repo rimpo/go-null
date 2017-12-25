@@ -67,6 +67,7 @@ Output:
 {order_code:0, scrip_code:"", member:"Rimpo", qty:0, price:0, market_order:false}
 ```
 order_code, scrip_code, price & market_order is present in the output json (with default values) even though nothing was assigned to them.
+
 Go json package supports *omitempty* in the tag but this will completely remove the actualy values i.e.
 if TypeOrderRequest is declared in this way and
 ```
