@@ -19,5 +19,7 @@ var (
 		"Bool":             true,
 		"DateInt":          true,
 		"DateTimeInt":      true,
+		"Int":              true,
+		"String":           true,
 	}
 )

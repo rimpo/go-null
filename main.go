@@ -363,7 +363,7 @@ func (g *Generator) appendInAllType(typeName string) error {
 		code = string(data)
 	}
 
-	if strings.Contains(code, typeName) {
+	if strings.Contains(code, "\""+typeName+"\"") {
 		//already available
 		return nil
 	}
