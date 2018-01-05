@@ -1,4 +1,10 @@
+// Copyright 2014 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
+
+//Note: Part of the code is copied from https://github.com/golang/tools/blob/master/cmd/stringer/stringer.go (hence the BSD license)
 
 import (
 	"bytes"
@@ -33,10 +39,11 @@ func Usage() {
 	flag.PrintDefaults()
 }
 
-func mkDir(dir string) {
+func mkDir(dir string) error {
 	if err := os.MkdirAll(dir, 0700); err != nil {
-		fmt.Println("Warning: failed to create directory:", dir, err)
+		return fmt.Errorf("failed to create directory:%s. %v", dir, err)
 	}
+	return nil
 }
 
 func main() {
@@ -62,8 +69,14 @@ func main() {
 	g.outputDir = *outputDir
 	g.pkgPath = *packagePath
 
-	mkDir(g.outputDir + "/jsonx")
-	mkDir(g.outputDir + "/null")
+	err := mkDir(g.outputDir + "/jsonx")
+	if err != nil {
+		log.Printf("warning:%v\n", err)
+	}
+	err = mkDir(g.outputDir + "/null")
+	if err != nil {
+		log.Printf("warning:%v\n", err)
+	}
 
 	g.createJsonxLib()
 
@@ -211,14 +224,23 @@ func (g *Generator) generate() {
 
 			file.setPkgPath(g.pkgPath)
 
+			//check the for type duplication & comment not added for int types
 			for i, _ := range file.types {
-				file.types[i].Check()
-				g.generateCode(&file.types[i])
-
+				err := file.types[i].assert()
+				if err != nil {
+					log.Fatalf("Error: Invalid enums. %v", err)
+				}
 			}
+
+			//generate code for custom types
+			for i, _ := range file.types {
+				g.generateCode(&file.types[i])
+			}
+
 		}
 	}
 
+	//generate code for core types
 	for i, _ := range coreTypes {
 		g.generateCode(&coreTypes[i])
 	}
@@ -305,36 +327,18 @@ func (f *File) genDecl(node ast.Node) bool {
 			if !ok {
 				log.Fatalf("no value for constant %s", name)
 			}
-			//info := obj.Type().Underlying().(*types.Basic).Info()
-			//if info&types.IsInteger == 0 {
-			//	log.Fatalf("can't handle non-integer constant type %s", typ)
-			//}
+
 			value := obj.(*types.Const).Val() // Guaranteed to succeed as this is CONST.
-			/*var u64 uint64
-			var isUint bool
-			if value.Kind() == exact.Int {
-				log.Fatalf("can't happen: constant is not an integer %s", name)
-				i64, isInt := exact.Int64Val(value)
-				u64, isUint = exact.Uint64Val(value)
-				if !isInt && !isUint {
-					log.Fatalf("internal error: value of %s is not an integer: %s", name, value.String())
-				}
-				if !isInt {
-					u64 = uint64(i64)
-				}
-			}*/
+
 			v := Value{
-				typ:  typ,
-				name: name.Name,
-				//value: u64,
-				//signed: info&types.IsUnsigned == 0,
+				typ:     typ,
+				name:    name.Name,
 				kind:    value.Kind(),
 				str:     value.String(),
 				comment: strings.TrimRight(vspec.Comment.Text(), "\n"),
 			}
 			v.name = strings.TrimPrefix(v.name, f.trimPrefix)
 			f.types[len(f.types)-1].values = append(f.types[len(f.types)-1].values, v)
-			//fmt.Println("inside gen:", v)
 		}
 	}
 	return false
