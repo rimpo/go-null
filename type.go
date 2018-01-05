@@ -3,16 +3,37 @@ package main
 import (
 	"bytes"
 	"fmt"
+	exact "go/constant"
 	"log"
 	"text/template"
 )
 
+// Value represents a declared constant.
+type Value struct {
+	typ  string //type name
+	name string // The name of the constant.
+	// The value is stored as a bit pattern alone. The boolean tells us
+	// whether to interpret it as an int64 or a uint64; the only place
+	// this matters is when sorting.
+	// Much of the time the str field is all we need; it is printed
+	// by Value.String.
+	value   uint64 // Will be converted to int64 when needed.
+	signed  bool   // Whether the constant is a signed type.
+	str     string // The string representation given by the "go/exact" package.
+	comment string
+	kind    exact.Kind
+}
+
+func (v *Value) String() string {
+	return v.str
+}
+
 type Type struct {
-	name         string     // name of the type
-	baseName     string     // built in type ie. int, string, float64, bool
-	values       ValueSlice // Accumulator for constant value of this type.
-	pkgPath      string     // path of the package
-	pkgName      string     //source package name; package where type is declared
+	name         string  // name of the type
+	baseName     string  // built in type ie. int, string, float64, bool
+	values       []Value // Accumulator for constant value of this type.
+	pkgPath      string  // path of the package
+	pkgName      string  //source package name; package where type is declared
 	templateType TemplateType
 }
 
@@ -43,29 +64,34 @@ var coreTypes = []Type{
 	},
 }
 
+//Special Type: TypeMapInt and TypeMapString
+//Should be rarely used.
+//New type declaration using special type should only used when we have very big enum set and the enum const are not needed for business logic.
+//One example of this type would be Country Code. We only need the code string mapping of huge code list.
+
 type typeID string
 
 const (
 	stringID        typeID = "string"
 	intID                  = "int"           //numerical types
 	float64ID              = "float64"       //numerical types
-	typeMapIntID           = "TypeMapInt"    //special types
-	typeMapStringID        = "TypeMapString" //special types
+	typeMapIntID           = "TypeMapInt"    //special types (hack): enum types with no const values but with a map exported with name Map<type name>IDToText
+	typeMapStringID        = "TypeMapString" //special types (hack): enum types with no const values but with a map exported with name Map<type name>IDToText
 )
 
-func (typ *Type) IsSpecialMapType() bool {
+func (typ *Type) isSpecialMapType() bool {
 	return typ.baseName == string(typeMapIntID) || typ.baseName == string(typeMapStringID)
 }
 
-func (typ *Type) IsNumerical() bool {
+func (typ *Type) isNumerical() bool {
 	return typ.baseName == string(intID) || typ.baseName == string(float64ID)
 }
 
-func (typ *Type) IsStringType() bool {
+func (typ *Type) isStringType() bool {
 	return typ.baseName == string(stringID) || typ.baseName == string(typeMapStringID)
 }
 
-func (typ *Type) IsCore() bool {
+func (typ *Type) isCore() bool {
 	for i, _ := range coreTypes {
 		if typ.name == coreTypes[i].name {
 			return true
@@ -74,7 +100,7 @@ func (typ *Type) IsCore() bool {
 	return false
 }
 
-func (typ *Type) IsEnum() bool {
+func (typ *Type) isEnum() bool {
 	return len(typ.values) > 0
 }
 
@@ -90,7 +116,7 @@ func (typ *Type) assert() error {
 		}
 	}
 	//for numerical - we need text representation in comments
-	if typ.IsNumerical() {
+	if typ.isNumerical() {
 		dupComment := make(map[string]bool)
 		for _, v := range typ.values {
 			if v.comment == "" {
@@ -106,15 +132,6 @@ func (typ *Type) assert() error {
 	}
 	return nil
 }
-
-const allTypesHeaderCode = `
-package null
-//Auto-generated code; DONT EDIT THIS CODE
-var (
-	AllTypes = map[string]bool {
-	}
-)
-`
 
 var templateCore = template.Must(template.New("templateCoreCodeString").Parse(templateCoreCodeString))
 var templateNonEnum = template.Must(template.New("templateNonEnumCodeString").Parse(templateNonEnumCodeString))
@@ -134,15 +151,15 @@ const (
 )
 
 func (typ *Type) setTemplateType() {
-	if typ.IsSpecialMapType() {
+	if typ.isSpecialMapType() {
 		typ.templateType = EnumMapType
-	} else if typ.IsCore() {
+	} else if typ.isCore() {
 		typ.templateType = CoreType
-	} else if !typ.IsEnum() {
+	} else if !typ.isEnum() {
 		typ.templateType = NonEnumType
-	} else if typ.IsEnum() && typ.IsNumerical() {
+	} else if typ.isEnum() && typ.isNumerical() {
 		typ.templateType = EnumNumType
-	} else if typ.IsEnum() && !typ.IsNumerical() {
+	} else if typ.isEnum() && !typ.isNumerical() {
 		typ.templateType = EnumNonNumType
 	} else {
 		typ.templateType = InvalidType
@@ -223,9 +240,9 @@ func (typ *Type) getLookupMapCode() string {
 
 func (typ *Type) getLookupSpecialMapCode() string {
 	result := "\tres, ok := " + typ.pkgName + ".Map" + typ.name + "IDToText"
-	if typ.baseName == "TypeMapInt" {
+	if typ.baseName == string(typeMapIntID) {
 		result += "[int(val)]\n"
-	} else if typ.baseName == "TypeMapString" {
+	} else if typ.baseName == string(typeMapStringID) {
 		result += "[string(val)]\n"
 	}
 	result += "\treturn res, ok\n"
@@ -246,7 +263,7 @@ func (typ *Type) getLookupCode() string {
 
 func (typ *Type) getIsEmptyCode() string {
 	result := ""
-	if typ.IsStringType() {
+	if typ.isStringType() {
 		return "func (t *" + typ.name + ") IsEmpty() bool {\n\treturn t.IsNull() || len(string(t.val)) == 0\n}"
 	}
 	return result

@@ -344,6 +344,15 @@ func (f *File) genDecl(node ast.Node) bool {
 	return false
 }
 
+const allTypesHeaderCode = `
+package null
+//Auto-generated code; DONT EDIT THIS CODE
+var (
+	AllTypes = map[string]bool {
+	}
+)
+`
+
 func (g *Generator) appendInAllType(typeName string) error {
 	nullDir := fmt.Sprintf("%s/null", g.outputDir)
 	data, err := ioutil.ReadFile(nullDir + "/all_types.go")
