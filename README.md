@@ -1,9 +1,24 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/rimpo/go-null)](https://goreportcard.com/report/github.com/rimpo/go-null)
+
 #### Note: Command should work. Documentation work is going on.
 
 # go-null
 
-Alternative way of handling struct and json in Go.
+go-null is a code generator for go. Alternative way of defining struct for representing json.
 
+## Usage
+
+TBD
+```
+go-null -package=<package path> -output=<generated code path>
+
+
+#Add below line on top of the enums and custom type packages for which you want to generate null types.
+#Note: choose any one file of the package and write once
+//go:generate go-null -package=github.com/rimpo/go-null/examples/examples1/ -output=..
+
+#null and jsonx package will be generated in path github.com/rimpo/go-null/examples/examples1/
+```
 
 ## Why?
 
@@ -11,13 +26,78 @@ Go initializes struct object fields with default values (i.e. string as "", int 
 In case, struct is used to define the json in the code, defaults values are exported even though nothing was assigned in the fields of the struct object.
 This causes incorrect data exported.
 
+Example (snippet):
+```
+package main
 
-## Available Options (Go way):
+import (
+  "fmt"
+  "encoding/json"
+)
 
-1. Converting field to pointer:
+type TypeOrderCode int 
+const (
+  OrderRequest TypeOrderCode = iota
+  OrderResponse
+  OrderTrade
+)
+type TypeOrderRequest struct {
+  OrderCode TypeOrderCode `json:"order_code"`
+  ScripCode string `json:"scrip_code"`
+  Member string `json:"member"`
+  Qty int `json:"qty"`
+  Price int `json:"price"`
+  MarketOrder bool `json:"market_order"`
+}
 
-#### Cons:
+func main(){
+  var req TypeOrderRequest
+  
+  //Business Logic - start
+  req.Qty = 100
+  req.Member = "Rimpo"
+  //Business Logic - end
+  
+ data, _ := json.Marshal(req)
+ fmt.Println(string(data))
+}
+```
+Output:
+```
+{order_code:0, scrip_code:"", member:"Rimpo", qty:0, price:0, market_order:false}
+```
+order_code, scrip_code, price & market_order is present in the output json (with default values) even though nothing was assigned to them.
 
+Go json package supports *omitempty* in the tag but this will completely remove the actualy values i.e.
+if TypeOrderRequest is declared in this way and
+```
+type TypeOrderRequest struct {
+  OrderCode TypeOrderCode `json:"order_code"`
+  ScripCode string `json:"scrip_code,omitempty"`
+  Member string `json:"member,omitempty"`
+  Qty int `json:"qty"`
+  Price int `json:"price"`
+  MarketOrder bool `json:"market_order,omitempty"`
+}
+
+//Business Logic - start
+ req.Qty = 100
+req.Member = "Rimpo"
+req.MarketOrder = false
+//Business Logic - end
+```
+Output:
+```
+{order_code:0, member:"Rimpo", qty:0, price:0}
+```
+*omitempty* causes default values not getting marshalled in json.Marshal.
+MarketOrder was assigned false value still it didn't get into the output json.
+
+
+## Available Option:
+
+### Converting field to [pointer](https://stackoverflow.com/questions/18088294/how-to-not-marshal-an-empty-struct-into-json-with-go):
+Problem with this approach 
 - The code will contains lot of * and & if you use this JSON struct in your buisness logic.
 - Need to take care of allocation of the values and good understanding of pointers
 
@@ -31,18 +111,5 @@ All you have to to is now to add the null types in your json struct declaration.
 It also generates *jsonx* package which supports marshalling of null types (generated using the go-null command) and you can use *omitempty* to drop null values.
 
 
-
-## Usage
-
-```
-go-null -package=<package path> -output=<generated code path>
-
-
-#Add below line on top of the enums and custom type packages for which you want to generate null types.
-#Note: choose any one file of the package and write once
-//go:generate go-null -package=github.com/rimpo/go-null/examples/examples1/ -output=..
-
-#null and jsonx package will be generated in path github.com/rimpo/go-null/examples/examples1/
-```
 
 
