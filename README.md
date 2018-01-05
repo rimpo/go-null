@@ -1,6 +1,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rimpo/go-null)](https://goreportcard.com/report/github.com/rimpo/go-null)
 
-#### Note: Command should work. Documentation work is going on.
+#### ***************************************
+####            Work Under Progress
+#### ***************************************
 
 # go-null
 
@@ -8,17 +10,28 @@ go-null is a code generator for go. Alternative way of defining struct for repre
 
 ## Usage
 
-TBD
+In the package containing custom enums and custom type which is going get used in the json struct,
+add below line in one of the source code file inside the package.
 ```
 go-null -package=<package path> -output=<generated code path>
 
+```
 
-#Add below line on top of the enums and custom type packages for which you want to generate null types.
-#Note: choose any one file of the package and write once
+example1: [enums.go](https://github.com/rimpo/go-null/blob/master/examples/example1/enum/enums.go)
+```
 //go:generate go-null -package=github.com/rimpo/go-null/examples/examples1/ -output=..
 
-#null and jsonx package will be generated in path github.com/rimpo/go-null/examples/examples1/
+#run
+github.com/rimpo/go-null/examples/examples1/>go generate ./...
 ```
+null and jsonx package will be auto-generated in [path](github.com/rimpo/go-null/examples/examples1/)
+
+generated source code of null types:
+[typememberstatus.go](https://github.com/rimpo/go-null/blob/master/examples/example1/null/typememberstatus.go)
+[typephoneprivacy.go](https://github.com/rimpo/go-null/blob/master/examples/example1/null/typephoneprivacy.go)
+
+null - contains all the wrapped types
+json - package for marshalling null types in json
 
 ## Why?
 
