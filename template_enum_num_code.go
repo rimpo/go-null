@@ -73,6 +73,16 @@ func IsValue{{.TypeName}}(val {{.SourceType}}) bool {
 	return ok
 }
 
+func (t *{{.TypeName}}) GetDisplay() string {
+	if !t.valid {
+		return ""
+	}
+	val, ok := _Lookup{{.TypeName}}IDToText(t.val)
+	if ok {
+		return val
+	}
+	return ""
+}
 
 func (t *{{.TypeName}}) MarshalJSON() ([]byte, error) {
 	val, ok := _Lookup{{.TypeName}}IDToText(t.val)
