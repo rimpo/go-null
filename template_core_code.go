@@ -42,6 +42,10 @@ func (t *{{.TypeName}}) IsNull() bool {
 	return !t.valid
 }
 
+func (t *{{.TypeName}}) Reset() {
+	t.valid = false
+}
+
 {{.IsEmptyCode}}
 
 //Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)

@@ -44,6 +44,10 @@ func (t *{{.TypeName}}) IsNull() bool {
 	return !t.valid
 }
 
+func (t *{{.TypeName}}) Reset() {
+	t.valid = false
+}
+
 {{.IsEmptyCode}}
 
 
