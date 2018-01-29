@@ -120,7 +120,7 @@ func (typ *Type) assert() error {
 		dupComment := make(map[string]bool)
 		for _, v := range typ.values {
 			if v.comment == "" {
-				return fmt.Errorf("Error: No comment found in int/float64 type enum type:%v name:%v", typ.name, v.name)
+				//return fmt.Errorf("Error: No comment found in int/float64 type enum type:%v name:%v", typ.name, v.name)
 			}
 			_, ok := dupComment[v.comment]
 			if !ok {
