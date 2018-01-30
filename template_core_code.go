@@ -28,8 +28,7 @@ func (t *{{.TypeName}}) Set(val {{.SourceType}}) {
 //Logs error message
 func (t *{{.TypeName}}) Get() {{.SourceType}}{
 	if t.IsNull() {
-		log.WithFields(log.Fields{"type":"{{.TypeName}}"}).Warn("null value used !!!.")
-		log.Warnf("%v",debug.Stack())
+		log.WithFields(log.Fields{"type":"{{.TypeName}}", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
 	return t.val
 }

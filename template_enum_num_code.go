@@ -30,8 +30,7 @@ func (t *{{.TypeName}}) Set(val {{.SourceType}}) {
 //Logs error message
 func (t *{{.TypeName}}) Get() {{.SourceType}} {
 	if t.IsNull() {
-		log.WithFields(log.Fields{"type":"{{.TypeName}}"}).Warn("null value used !!!.")
-		log.Warnf("%v",debug.Stack())
+		log.WithFields(log.Fields{"type":"{{.TypeName}}", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
 	return t.val
 }
@@ -55,8 +54,7 @@ func (t *{{.TypeName}}) Reset() {
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *{{.TypeName}}) SetSafe(val {{.SourceType}}) {
 	if !IsValue{{.TypeName}}(val) {
-		log.WithFields(log.Fields{"type":"{{.TypeName}}", "value": val}).Warn("unknown value assigned !!!.")
-		log.Warnf("%v",debug.Stack())
+		log.WithFields(log.Fields{"type":"{{.TypeName}}", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true
