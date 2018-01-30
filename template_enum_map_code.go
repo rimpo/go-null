@@ -5,8 +5,8 @@ package null
 
 import (
 	"encoding/json"
-	"log"
 	"runtime/debug"
+	log "github.com/Sirupsen/logrus"
 
 	{{.ImportLib}}	
 )
@@ -30,8 +30,8 @@ func (t *{{.TypeName}}) Set(val {{.SourceType}}) {
 //Logs error message
 func (t *{{.TypeName}}) Get() {{.SourceType}} {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:{{.TypeName}}!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type":"{{.TypeName}}"}).Warn("null value used !!!.")
+		log.Warnf("%v",debug.Stack())
 	}
 	return t.val
 }
@@ -55,8 +55,8 @@ func (t *{{.TypeName}}) Reset() {
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *{{.TypeName}}) SetSafe(val {{.SourceType}}) {
 	if !IsValue{{.TypeName}}(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:{{.TypeName}}!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type":"{{.TypeName}}", "value": val}).Warn("unknown value assigned !!!.")
+		log.Warnf("%v",debug.Stack())
 	}
 	t.val = val
 	t.valid = true

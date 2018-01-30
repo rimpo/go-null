@@ -5,8 +5,8 @@ package null
 
 import (
 	"encoding/json"
-	"log"
 	"runtime/debug"
+	log "github.com/Sirupsen/logrus"
 
 	{{.ImportLib}}
 )
@@ -30,8 +30,8 @@ func (t *{{.TypeName}}) Set(val {{.SourceType}}) {
 //Logs error message
 func (t *{{.TypeName}}) Get() {{.SourceType}} {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:{{.TypeName}}!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type":"{{.TypeName}}"}).Warn("null value used !!!.")
+		log.Warnf("%v",debug.Stack())
 	}
 	return t.val
 }
