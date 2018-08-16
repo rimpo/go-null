@@ -54,6 +54,7 @@ func TestNullBuiltInTypes(t *testing.T) {
 type Photo struct {
 	Url null.String `json:"url"`
 	ID  null.Int    `json:"id"`
+	A   string      `json:"a"`
 }
 
 type testProfile struct {

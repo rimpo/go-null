@@ -7,10 +7,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"strings"
-
-	"github.com/rimpo/go-null/examples/example1/null"
 )
 
 const (
@@ -134,8 +133,8 @@ func getJSONLoop(v reflect.Value, jsonData *bytes.Buffer, jsonTag string) error 
 
 		}
 	case reflect.Struct:
-		_, ok := null.AllTypes[v.Type().Name()]
-		if ok {
+		_, pkgName := filepath.Split(v.Type().PkgPath())
+		if pkgName == "null" {
 			//field type
 			tag, tagOpt := parseTag(jsonTag)
 			if tag == ignoreTagName {
