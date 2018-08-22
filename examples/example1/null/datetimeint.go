@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/typ"
@@ -27,9 +27,12 @@ func (t *DateTimeInt) Set(val typ.DateTimeInt) {
 //Logs error message
 func (t *DateTimeInt) Get() typ.DateTimeInt {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:DateTimeInt!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "DateTimeInt", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *DateTimeInt) GetUnsafe() typ.DateTimeInt {
 	return t.val
 }
 
@@ -39,6 +42,10 @@ func (t *DateTimeInt) GetPtr() *typ.DateTimeInt {
 
 func (t *DateTimeInt) IsNull() bool {
 	return !t.valid
+}
+
+func (t *DateTimeInt) Reset() {
+	t.valid = false
 }
 
 //Must for loading from external data (i.e. database, elastic, redis, etc.). //dummy function (same as Set)

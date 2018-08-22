@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypePhotoStatus) Set(val enum.TypePhotoStatus) {
 //Logs error message
 func (t *TypePhotoStatus) Get() enum.TypePhotoStatus {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypePhotoStatus!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypePhotoStatus", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypePhotoStatus) GetUnsafe() enum.TypePhotoStatus {
 	return t.val
 }
 
@@ -41,11 +44,14 @@ func (t *TypePhotoStatus) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypePhotoStatus) Reset() {
+	t.valid = false
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypePhotoStatus) SetSafe(val enum.TypePhotoStatus) {
 	if !IsValueTypePhotoStatus(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypePhotoStatus!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypePhotoStatus", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true
@@ -75,6 +81,17 @@ func _LookupTypePhotoStatusIDToText(val enum.TypePhotoStatus) (string, bool) {
 func IsValueTypePhotoStatus(val enum.TypePhotoStatus) bool {
 	_, ok := _LookupTypePhotoStatusIDToText(val)
 	return ok
+}
+
+func (t *TypePhotoStatus) GetDisplay() string {
+	if !t.valid {
+		return ""
+	}
+	val, ok := _LookupTypePhotoStatusIDToText(t.val)
+	if ok {
+		return val
+	}
+	return ""
 }
 
 func (t *TypePhotoStatus) MarshalJSON() ([]byte, error) {

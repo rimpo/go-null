@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeMapString) Set(val enum.TypeMapString) {
 //Logs error message
 func (t *TypeMapString) Get() enum.TypeMapString {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeMapString!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeMapString", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeMapString) GetUnsafe() enum.TypeMapString {
 	return t.val
 }
 
@@ -39,6 +42,10 @@ func (t *TypeMapString) GetPtr() *enum.TypeMapString {
 
 func (t *TypeMapString) IsNull() bool {
 	return !t.valid
+}
+
+func (t *TypeMapString) Reset() {
+	t.valid = false
 }
 
 func (t *TypeMapString) IsEmpty() bool {

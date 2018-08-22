@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeABC) Set(val enum.TypeABC) {
 //Logs error message
 func (t *TypeABC) Get() enum.TypeABC {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeABC!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeABC", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeABC) GetUnsafe() enum.TypeABC {
 	return t.val
 }
 
@@ -41,11 +44,14 @@ func (t *TypeABC) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeABC) Reset() {
+	t.valid = false
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeABC) SetSafe(val enum.TypeABC) {
 	if !IsValueTypeABC(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypeABC!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeABC", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true
@@ -60,6 +66,17 @@ func _LookupTypeABCIDToText(val enum.TypeABC) (string, bool) {
 func IsValueTypeABC(val enum.TypeABC) bool {
 	_, ok := _LookupTypeABCIDToText(val)
 	return ok
+}
+
+func (t *TypeABC) GetDisplay() string {
+	if !t.valid {
+		return ""
+	}
+	val, ok := _LookupTypeABCIDToText(t.val)
+	if ok {
+		return val
+	}
+	return ""
 }
 
 func (t *TypeABC) MarshalJSON() ([]byte, error) {

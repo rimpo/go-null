@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeShowPhoto) Set(val enum.TypeShowPhoto) {
 //Logs error message
 func (t *TypeShowPhoto) Get() enum.TypeShowPhoto {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeShowPhoto!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeShowPhoto", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeShowPhoto) GetUnsafe() enum.TypeShowPhoto {
 	return t.val
 }
 
@@ -41,6 +44,10 @@ func (t *TypeShowPhoto) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeShowPhoto) Reset() {
+	t.valid = false
+}
+
 func (t *TypeShowPhoto) IsEmpty() bool {
 	return t.IsNull() || len(string(t.val)) == 0
 }
@@ -48,8 +55,7 @@ func (t *TypeShowPhoto) IsEmpty() bool {
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeShowPhoto) SetSafe(val enum.TypeShowPhoto) {
 	if !IsValueTypeShowPhoto(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypeShowPhoto!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeShowPhoto", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true

@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeMemberStatus) Set(val enum.TypeMemberStatus) {
 //Logs error message
 func (t *TypeMemberStatus) Get() enum.TypeMemberStatus {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeMemberStatus!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeMemberStatus", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeMemberStatus) GetUnsafe() enum.TypeMemberStatus {
 	return t.val
 }
 
@@ -41,6 +44,10 @@ func (t *TypeMemberStatus) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeMemberStatus) Reset() {
+	t.valid = false
+}
+
 func (t *TypeMemberStatus) IsEmpty() bool {
 	return t.IsNull() || len(string(t.val)) == 0
 }
@@ -48,8 +55,7 @@ func (t *TypeMemberStatus) IsEmpty() bool {
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeMemberStatus) SetSafe(val enum.TypeMemberStatus) {
 	if !IsValueTypeMemberStatus(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypeMemberStatus!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeMemberStatus", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true

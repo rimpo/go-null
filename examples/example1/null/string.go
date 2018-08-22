@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 )
 
@@ -25,9 +25,12 @@ func (t *String) Set(val string) {
 //Logs error message
 func (t *String) Get() string {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:String!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "String", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *String) GetUnsafe() string {
 	return t.val
 }
 
@@ -37,6 +40,10 @@ func (t *String) GetPtr() *string {
 
 func (t *String) IsNull() bool {
 	return !t.valid
+}
+
+func (t *String) Reset() {
+	t.valid = false
 }
 
 func (t *String) IsEmpty() bool {

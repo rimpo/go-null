@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeSample1) Set(val enum.TypeSample1) {
 //Logs error message
 func (t *TypeSample1) Get() enum.TypeSample1 {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeSample1!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeSample1", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeSample1) GetUnsafe() enum.TypeSample1 {
 	return t.val
 }
 
@@ -41,11 +44,14 @@ func (t *TypeSample1) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeSample1) Reset() {
+	t.valid = false
+}
+
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeSample1) SetSafe(val enum.TypeSample1) {
 	if !IsValueTypeSample1(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypeSample1!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeSample1", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true
@@ -69,6 +75,17 @@ func _LookupTypeSample1IDToText(val enum.TypeSample1) (string, bool) {
 func IsValueTypeSample1(val enum.TypeSample1) bool {
 	_, ok := _LookupTypeSample1IDToText(val)
 	return ok
+}
+
+func (t *TypeSample1) GetDisplay() string {
+	if !t.valid {
+		return ""
+	}
+	val, ok := _LookupTypeSample1IDToText(t.val)
+	if ok {
+		return val
+	}
+	return ""
 }
 
 func (t *TypeSample1) MarshalJSON() ([]byte, error) {
