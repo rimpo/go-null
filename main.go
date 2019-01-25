@@ -69,16 +69,10 @@ func main() {
 	g.outputDir = *outputDir
 	g.pkgPath = *packagePath
 
-	err := mkDir(g.outputDir + "/jsonx")
+	err := mkDir(g.outputDir + "/null")
 	if err != nil {
 		log.Printf("warning:%v\n", err)
 	}
-	err = mkDir(g.outputDir + "/null")
-	if err != nil {
-		log.Printf("warning:%v\n", err)
-	}
-
-	g.createJsonxLib()
 
 	g.generate()
 
