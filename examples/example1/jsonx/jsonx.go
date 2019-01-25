@@ -101,6 +101,16 @@ func Marshal(src interface{}, jsonData *bytes.Buffer) {
 
 func getJSONLoop(v reflect.Value, jsonData *bytes.Buffer, jsonTag string) error {
 	switch v.Type().Kind() {
+	case reflect.Map:
+		m, ok := v.Addr().Interface().(json.Marshaler)
+		if !ok {
+			return fmt.Errorf("Failed interface conversion to json.Marshaler")
+		}
+		b, err := m.MarshalJSON()
+		if err != nil {
+			return fmt.Errorf("Failed to MarshalJSON %v", err)
+		}
+		jsonData.Write(b)
 	case reflect.Slice:
 		tag, tagOpt := parseTag(jsonTag)
 		//only if json tag exist processing is done
@@ -157,14 +167,18 @@ func getJSONLoop(v reflect.Value, jsonData *bytes.Buffer, jsonTag string) error 
 			//only if json tag exist processing is done
 			if len(tag) > 0 {
 				var jsonDataStruct bytes.Buffer
-				//write key for json
 				var jsonKey bytes.Buffer
-				if tag == ignoreTagName {
-					jsonKey.WriteString("{")
-				} else {
-					jsonKey.WriteString(`"`)
-					jsonKey.WriteString(tag)
-					jsonKey.WriteString(`":{`)
+
+				//write key for json
+				//check for ignore export flag
+				if !tagOpt.contains("ignore") {
+					if tag == ignoreTagName {
+						jsonKey.WriteString("{")
+					} else {
+						jsonKey.WriteString(`"`)
+						jsonKey.WriteString(tag)
+						jsonKey.WriteString(`":{`)
+					}
 				}
 				jsonDataStruct.WriteString(jsonKey.String())
 				//each field
@@ -180,7 +194,10 @@ func getJSONLoop(v reflect.Value, jsonData *bytes.Buffer, jsonTag string) error 
 				}
 				truncateLastComma(&jsonDataStruct)
 
-				jsonDataStruct.WriteString("}")
+				//check for ignore export flag
+				if !tagOpt.contains("ignore") {
+					jsonDataStruct.WriteString("}")
+				}
 
 				//omitempty struct should not show if the struct is empty
 				if tagOpt.contains("omitempty") && jsonDataStruct.Len() == jsonKey.Len()+1 {

@@ -2,7 +2,7 @@ package null
 
 import (
 	"encoding/json"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"runtime/debug"
 
 	"github.com/rimpo/go-null/examples/example1/enum"
@@ -27,9 +27,12 @@ func (t *TypeNamePrivacy) Set(val enum.TypeNamePrivacy) {
 //Logs error message
 func (t *TypeNamePrivacy) Get() enum.TypeNamePrivacy {
 	if t.IsNull() {
-		log.Printf("ERROR: Fetching a null value from type:TypeNamePrivacy!!.\n")
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeNamePrivacy", "stack": string(debug.Stack()[:])}).Warn("null value used !!!.")
 	}
+	return t.val
+}
+
+func (t *TypeNamePrivacy) GetUnsafe() enum.TypeNamePrivacy {
 	return t.val
 }
 
@@ -41,6 +44,10 @@ func (t *TypeNamePrivacy) IsNull() bool {
 	return !t.valid
 }
 
+func (t *TypeNamePrivacy) Reset() {
+	t.valid = false
+}
+
 func (t *TypeNamePrivacy) IsEmpty() bool {
 	return t.IsNull() || len(string(t.val)) == 0
 }
@@ -48,8 +55,7 @@ func (t *TypeNamePrivacy) IsEmpty() bool {
 //Must for loading from external data (i.e. database, elastic, redis, etc.). logs error message
 func (t *TypeNamePrivacy) SetSafe(val enum.TypeNamePrivacy) {
 	if !IsValueTypeNamePrivacy(val) {
-		log.Printf("ERROR: Unknown value:%v assigned to type:TypeNamePrivacy!!.\n", val)
-		debug.PrintStack()
+		log.WithFields(log.Fields{"type": "TypeNamePrivacy", "value": val, "stack": string(debug.Stack()[:])}).Warn("unknown value assigned !!!.")
 	}
 	t.val = val
 	t.valid = true

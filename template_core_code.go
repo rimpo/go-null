@@ -33,6 +33,11 @@ func (t *{{.TypeName}}) Get() {{.SourceType}}{
 	return t.val
 }
 
+func (t *{{.TypeName}}) GetUnsafe() {{.SourceType}} {
+	return t.val
+}
+
+
 func (t *{{.TypeName}}) GetPtr() *{{.SourceType}}{
 	return &t.val
 }
