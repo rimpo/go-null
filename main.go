@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 )
 
 var (
@@ -368,49 +367,6 @@ func (g *Generator) appendInAllType(typeName string) error {
 	buf.WriteString(code)
 	if err := ioutil.WriteFile(nullDir+"/all_types.go", g.format(&buf), 0644); err != nil {
 		fmt.Println("Warning: failed to write all_types.go file:", err)
-	}
-	return nil
-}
-
-func (g *Generator) createJsonxLib() error {
-	var buf bytes.Buffer
-	//fmt.Fprintf(&buf, GetJsonxCode(), g.pkgPath)
-
-	var templateJsonxCode = template.Must(template.New("templateJsonxCode").Parse(GetJsonxCode()))
-
-	err := templateJsonxCode.Execute(&buf, struct {
-		PackagePath string
-	}{
-		g.pkgPath,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return err
-	}
-
-	jsonxDir := fmt.Sprintf("%s/jsonx", g.outputDir)
-	if err := ioutil.WriteFile(jsonxDir+"/jsonx.go", g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write jsonx.go file:", err)
-	}
-
-	buf.Reset()
-
-	var templateJsonxTestCode = template.Must(template.New("templateJsonxTestCode").Parse(GetJsonxTestCode()))
-
-	err = templateJsonxTestCode.Execute(&buf, struct {
-		PackagePath string
-	}{
-		g.pkgPath,
-	})
-
-	if err != nil {
-		log.Fatalf("Execution failed:%s", err)
-		return err
-	}
-
-	if err := ioutil.WriteFile(jsonxDir+"/jsonx_test.go", g.format(&buf), 0644); err != nil {
-		fmt.Println("Warning: failed to write jsonx_test.go file:", err)
 	}
 	return nil
 }
