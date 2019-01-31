@@ -1,9 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rimpo/go-null)](https://goreportcard.com/report/github.com/rimpo/go-null)
 
-#### ***************************************
-####            Work Under Progress
-#### ***************************************
-
 # go-null
 
 go-null is a code generator for go. Alternative way of defining struct for representing json.
